@@ -33,6 +33,7 @@ Hỗ trợ BA xây dựng tài liệu đặc tả yêu cầu chi tiết (`requir
 4. **Ưu tiên multiple choice** — options tiếng Việt, gợi ý từ context thu thập được
 5. **Spec phải ĐẦY ĐỦ** — không để "TBD", không bỏ sót section nào trong template
 6. **Tôn trọng `rules.md`** trong thư mục feature nếu tồn tại
+7. **UI/UX ưu tiên làm theo màn có sẵn** — LUÔN hỏi BA màn hình nào trong hệ thống hiện tại để tham chiếu TRƯỚC khi thiết kế mới. Chỉ thiết kế mới khi BA xác nhận không có màn tham chiếu phù hợp
 
 ## Phân tích đối số
 
@@ -208,7 +209,7 @@ Phân tích theo các chiều:
 1. **Nghiệp vụ tổng quát** — scope, mục tiêu, actors
 2. **Chức năng chi tiết** — từng chức năng: luồng chính, ngoại lệ, business rules
 3. **Dữ liệu** — nguồn, đồng bộ, validation, enum/lookup
-4. **Giao diện** — layout, tham chiếu màn có sẵn, interaction states
+4. **Giao diện (ƯU TIÊN MÀN CÓ SẴN)** — BẮT BUỘC hỏi màn tham chiếu trước. Với MỖI màn hình/dialog, hỏi BA: "Màn này xây theo màn nào có sẵn trong hệ thống?" Chỉ thiết kế layout/interaction mới khi BA xác nhận không có màn tham chiếu. Nếu có màn tham chiếu → ghi rõ: làm giống màn X, khác ở điểm nào
 5. **Tích hợp** — API bên ngoài, authentication
 6. **Phân quyền** — roles, permission matrix
 7. **Xử lý lỗi** — error scenarios, retry, fallback
@@ -219,6 +220,7 @@ Phân tích theo các chiều:
 - **Gợi ý từ schema:** "Bảng `X` có cột `Y` kiểu `Z` — đây có phải trường [mô tả] không?"
 - **Gợi ý từ code:** "Module hiện tại đã có pattern [X] — có muốn áp dụng tương tự?"
 - **Gợi ý từ spec cũ:** "Spec hiện tại ghi [X] — thông tin này còn đúng không?"
+- **Gợi ý màn tham chiếu UI:** "Màn [X] này xây theo màn nào có sẵn? (a) Màn [A] — [mô tả] (b) Màn [B] — [mô tả] (c) Thiết kế mới hoàn toàn" — LUÔN hỏi câu này TRƯỚC KHI hỏi chi tiết layout/component
 - **Hỏi xác nhận batch:** Sau mỗi nhóm, tóm tắt và hỏi "Còn bổ sung gì không?"
 
 ### Kết thúc hỏi đáp
@@ -238,7 +240,7 @@ Khi đã cover hết các nhóm, tóm tắt thông tin đã thu thập và hỏi
 - **Mọi section trong template PHẢI có nội dung** — không bỏ trống, không "TBD"
 - Mọi enum/mapping → bảng tra cụ thể với đầy đủ giá trị
 - Mọi API endpoint → method, path, request params/body, response shape, error codes
-- Mọi màn hình → layout, danh sách component, interaction, states (loading/empty/error)
+- Mọi màn hình → **BẮT BUỘC ghi màn tham chiếu** (nếu có) trước layout/component. Format: "Xây dựng dựa trên màn [X], khác ở: [liệt kê điểm khác]". Chỉ mô tả layout mới từ đầu khi không có màn tham chiếu
 - Mọi chức năng → luồng chính + luồng ngoại lệ + business rules + validation
 - Kịch bản kiểm thử → happy path + edge cases + error cases + boundary
 - **Cross-reference** giữa sections: chức năng X → API Y → bảng Z → test TC-nn

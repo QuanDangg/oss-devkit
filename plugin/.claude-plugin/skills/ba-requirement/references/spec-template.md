@@ -202,8 +202,20 @@ Mô tả bằng lời:
 
 > Lặp lại cho MỖI màn hình / dialog / popup.
 
+#### Màn tham chiếu (BẮT BUỘC điền trước)
+
+> **QUAN TRỌNG:** Mọi màn hình PHẢI xác định màn tham chiếu trước khi mô tả layout/component. Ưu tiên tối đa việc xây dựng dựa trên màn có sẵn trong hệ thống.
+
+| Thuộc tính | Nội dung |
+|---|---|
+| Màn tham chiếu chính | [Tên màn hình có sẵn] hoặc "Thiết kế mới — không có màn tương tự" |
+| URL/Path tham chiếu | [URL hoặc route của màn tham chiếu] |
+| Mức độ tái sử dụng | (a) Giống 100% — chỉ khác dữ liệu (b) Giống ~80% — khác vài component (c) Giống layout — khác nội dung (d) Thiết kế mới hoàn toàn |
+| Điểm khác biệt | [Liệt kê CỤ THỂ những gì khác so với màn tham chiếu. Nếu giống 100% ghi "Không có"] |
+
 #### Layout
-Mô tả bố cục tổng quát: header, sidebar, content area, footer. Tham chiếu màn hình có sẵn nếu xây theo chuẩn.
+Nếu có màn tham chiếu → ghi "Áp dụng layout giống màn [X]" + chỉ mô tả phần KHÁC.
+Nếu thiết kế mới → mô tả bố cục tổng quát: header, sidebar, content area, footer.
 
 #### Components
 
@@ -243,12 +255,16 @@ Mô tả bố cục tổng quát: header, sidebar, content area, footer. Tham ch
 | Error | Lỗi API | Toast thông báo lỗi |
 | Success | Thao tác thành công | Toast thông báo thành công |
 
-#### Tham chiếu UI
+#### Tham chiếu UI chi tiết
 
-| Thành phần | Tham chiếu | Ghi chú |
-|---|---|---|
-| Layout tổng | [URL hoặc tên màn hình] | Áp dụng nguyên layout |
-| Popup cảnh báo | [URL hoặc tên màn hình] | Dùng component chung |
+> Nếu đã có màn tham chiếu ở trên, bảng dưới đây liệt kê chi tiết TỪNG thành phần tái sử dụng từ màn đó.
+
+| Thành phần | Tham chiếu từ màn | Giữ nguyên / Thay đổi | Chi tiết thay đổi (nếu có) |
+|---|---|---|---|
+| Layout tổng | [Tên màn] | Giữ nguyên / Thay đổi | [Mô tả thay đổi] |
+| Bảng dữ liệu | [Tên màn] | Thay đổi | Khác cột hiển thị, thêm filter X |
+| Popup/Dialog | [Tên màn] | Giữ nguyên | — |
+| Filter bar | [Tên màn] | Thay đổi | Thêm filter theo [trường Y] |
 
 ---
 

@@ -56,12 +56,28 @@ Câu hỏi mẫu:
 
 ---
 
-## 4. Giao diện (UI)
+## 4. Giao diện (UI) — ƯU TIÊN MÀN CÓ SẴN
 
-**Mục tiêu:** Xác định layout, components, interaction patterns.
+**Mục tiêu:** Xác định layout, components, interaction patterns. **NGUYÊN TẮC SỐ 1: Luôn hỏi màn tham chiếu TRƯỚC, chỉ hỏi chi tiết layout/component SAU.**
+
+### 4.0 Câu hỏi BẮT BUỘC hỏi TRƯỚC TIÊN (cho MỖI màn hình)
+
+> **QUAN TRỌNG:** Với MỖI màn hình/dialog/popup trong feature, PHẢI hỏi câu này TRƯỚC KHI hỏi bất kỳ chi tiết nào khác về giao diện.
+
+- "Màn hình [X] này xây theo màn nào CÓ SẴN trong hệ thống? (a) [Tên màn A — mô tả ngắn] (b) [Tên màn B — mô tả ngắn] (c) Không có màn tương tự — cần thiết kế mới"
+  - Nếu BA chọn (a) hoặc (b) → hỏi tiếp: "Giống bao nhiêu phần trăm? Điểm nào KHÁC so với màn tham chiếu?"
+  - Nếu BA chọn (c) → mới hỏi chi tiết layout/component từ đầu
+
+### 4.1 Câu hỏi khi CÓ màn tham chiếu (chỉ hỏi điểm KHÁC)
+
+- "So với màn [X], phần nào cần THAY ĐỔI? (a) Cột hiển thị (b) Bộ lọc (c) Nút hành động (d) Layout tổng (e) Không đổi gì — chỉ khác dữ liệu"
+- "Cột nào cần THÊM so với màn tham chiếu? Cột nào cần BỎ?"
+- "Filter nào cần THÊM/BỎ/SỬA so với màn tham chiếu?"
+- "Popup/dialog nào dùng lại từ màn tham chiếu? Cái nào cần mới?"
+
+### 4.2 Câu hỏi khi KHÔNG có màn tham chiếu (thiết kế mới)
 
 Câu hỏi mẫu:
-- "Màn hình này xây theo chuẩn màn nào có sẵn? (a) [Tên màn A — URL] (b) [Tên màn B — URL] (c) Thiết kế mới"
 - "Bảng dữ liệu có bao nhiêu tab? Mỗi tab hiển thị dữ liệu từ bảng nào?"
 - "Cột nào hiển thị trên bảng? Cột nào ẩn mặc định?"
 - "Cần filter cho những cột nào? Loại filter: (a) Text contains (b) Dropdown đơn (c) Multi-select (d) Date range"
@@ -73,6 +89,7 @@ Câu hỏi mẫu:
 **Gợi ý từ context:**
 - Từ components.md: liệt kê component có sẵn → hỏi "Dùng component [X] có sẵn?"
 - Từ patterns.md: nếu có pattern table/filter → gợi ý áp dụng
+- Từ docs code: quét danh sách màn hình hiện có → gợi ý làm options cho câu hỏi 4.0
 
 ---
 
