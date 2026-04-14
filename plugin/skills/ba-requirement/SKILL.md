@@ -14,7 +14,7 @@ Hỗ trợ BA xây dựng tài liệu đặc tả yêu cầu chi tiết (`requir
 
 ## Khi nào dùng skill này
 
-- BA có file khảo sát khách hàng (xlsx/csv/md) và cần sinh requirement_spec.md chi tiết
+- BA có file khảo sát khách hàng (xlsx/csv/md/txt/docs) và cần sinh requirement_spec.md chi tiết
 - Cần bổ sung/hoàn thiện spec hiện có bằng Q&A tương tác
 - Muốn kết hợp khảo sát + schema DB + docs code để sinh đặc tả đầy đủ
 
