@@ -1,0 +1,16 @@
+{
+  "name": "oss-devkit",
+  "description": "",
+  "owner": {
+    "name": "Quan Dang",
+    "url": "https://github.com/QuanDangg"
+  },
+  "plugins": [
+    {
+      "name": "oss-devkit",
+      "description": "",
+      "source": "./plugin",
+      "version": "1.0.0"
+    }
+  ]
+}

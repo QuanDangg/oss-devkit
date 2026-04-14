@@ -1,0 +1,34 @@
+# Incremental Update Strategy
+
+When `[frontend-path]/.docs/_manifest.json` already exists, do NOT re-analyze the entire codebase.
+
+## Steps
+
+1. **Read the manifest** — get last-documented commit SHA
+2. **Check if up to date** — if manifest commit == current HEAD, report "Already up to date (commit [SHA])" and stop
+3. **Get changed files** — `git -C [repo-path] diff --name-only [old-commit]..HEAD`
+4. **If diff fails** — fall back to `git log --oneline --name-only [old-commit]..HEAD` or ask the user
+4. **Map changed files to docs** — see table below
+5. **Re-analyze only affected sections** — read only changed source files, update corresponding docs
+6. **Update manifest** — new commit SHA and timestamp
+7. **Report what changed**
+
+## File-to-Doc Mapping
+
+| Changed file pattern | Update these docs |
+|---|---|
+| Page/view/route files | `routing.md` |
+| Component files | `components.md` |
+| Store/state files | `state.md` |
+| API client/fetch/service files | `api-client.md` |
+| Style/theme/token files | `styling.md` |
+| Hook/composable files | `patterns.md` |
+| package.json, tsconfig, bundler config | `dependencies.md`, `getting-started.md` |
+| Config, CI, env files | `overview.md`, `getting-started.md` |
+| Entry points, layout files | `overview.md` |
+
+If >30% of source files changed, suggest a full re-analysis instead.
+
+## Force Full Re-analysis
+
+If user passes `--full`, ignore the manifest and run from scratch.
