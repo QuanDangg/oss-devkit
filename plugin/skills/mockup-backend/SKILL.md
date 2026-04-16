@@ -31,7 +31,10 @@ Generate lean knowledge files from a backend codebase for future development.
 
 Describe HOW the codebase is organized and WHERE things live. Never list WHAT currently exists.
 
-**Exception — Static Constraints ARE allowed:** Enum values, status/type codes, and constant value→label mappings are schema contracts, not growing lists. Capture them. They define valid states the frontend must render correctly and rarely change.
+**Two exceptions — these ARE allowed:**
+
+1. **Static Constraints:** Enum values, status/type codes, and constant value→label mappings are schema contracts, not growing lists. Capture them.
+2. **Implementation Conventions:** Concrete patterns that every new module MUST follow — response shapes, endpoint naming conventions, permission naming patterns, CRUD lifecycle patterns, import/export flow patterns, delete strategy. These are **replication instructions**, not instance lists. A new developer (or AI) reading these should be able to build a new CRUD module that matches the existing codebase exactly.
 
 ### Forbidden Content (will make docs stale immediately)
 
@@ -44,12 +47,25 @@ Describe HOW the codebase is organized and WHERE things live. Never list WHAT cu
 - Lists/tables of individual background jobs or workers
 - ANY enumeration of items that grows when developers add new code
 
+### Allowed: Implementation Conventions (these are patterns, not instances)
+
+Conventions answer "how do I build a new module that matches the existing codebase?" Examples of what to capture:
+
+- CRUD endpoint naming convention (RESTful? action suffixes? what exact URL shape?)
+- List response shape (exact DTO/wrapper class and its field structure)
+- Permission naming convention (what pattern do permission strings follow?)
+- Delete strategy (physical vs soft delete? how are child records handled?)
+- Import/export flow (what base classes/pipes? streaming or direct download?)
+- Uniqueness validation (DB constraint, app-level check endpoint, or both?)
+
+These describe HOW to build, not WHAT exists. They stay valid when new modules are added.
+
 ### What to Write Instead
 
 | Doc | GOOD (timeless) | BAD (goes stale) |
 |---|---|---|
 | `models.md` | "Prisma ORM. Models defined in `prisma/schema.prisma`. Key pattern: each model has `createdAt`/`updatedAt` timestamps. Relations use `@relation` with explicit foreign keys." | "Models: User, Post, Comment, Tag..." |
-| `api-routes.md` | "Express routes in `src/routes/`. Each file exports a router. Pattern: `[resource].routes.ts`. Middleware chain: auth → validate → handler." | "GET /api/users, POST /api/users, GET /api/posts..." |
+| `api-routes.md` | "Routes in `src/routes/`. Each file exports a router. Pattern: `[resource].routes.ts`. Middleware chain: auth → validate → handler. CRUD endpoint convention: [discovered pattern]. List response shape: [discovered DTO]." | "GET /api/users, POST /api/users, GET /api/posts..." |
 | `migrations.md` | "Run: `npx prisma migrate dev`. Create: `npx prisma migrate dev --name [name]`. Files in `prisma/migrations/`." | "Migration 001_create_users, 002_add_posts..." |
 | `services.md` | "Services in `src/services/`. Pattern: one file per business domain. Each exports a class with static methods." | "UserService.create(), UserService.findById()..." |
 | `data-contracts.md` | "Order status: `1=pending, 2=processing, 3=shipped, 4=delivered, 5=cancelled`. Defined in `src/constants/order.ts`." | *(this IS good — static enum values are constraints, not instances)* |
@@ -102,18 +118,45 @@ Target ~50-80 lines per doc. Max 100. Use `scripts/discover.sh` to save tokens.
 
 ### Phase 2 — Targeted Analysis
 
+#### Step 1: Reference Module Deep Dive
+
+Before writing any docs, find **one complete CRUD module** — the one with the most endpoints (list, create, update, delete, import, export, check-name). Read its **entire lifecycle** end-to-end:
+
+1. **Find it:** `Grep` for controllers with the most route decorators, or look for modules that have import/export + CRUD
+2. **Read these files** for the chosen module:
+   - Controller (all route handlers — endpoint paths, decorators, response types)
+   - Service (business logic — soft delete cascade, uniqueness checks, pagination calls)
+   - Repository (query patterns — how list queries are built, what response shape is returned)
+   - DTOs (request/response shapes — pagination DTO, create/update DTOs, filter DTOs)
+   - Entity (TypeORM decorators — soft delete, indexes, unique constraints, relations)
+   - Migration (table creation — FK constraints, indexes, unique indexes)
+   - Pipes (if any — import validation pipes like `BaseValidateImport`)
+
+3. **Extract these conventions** (write them down — you'll use them in Step 2):
+   - **Endpoint naming:** What suffix does POST create use? (`/create` vs RESTful?) What about check-name?
+   - **Response shape:** What class wraps list responses? (`PaginationDto`? `CommonListResponse`? Something else?) Write the EXACT shape with field names.
+   - **Permission naming:** What pattern do `@Permissions()` decorators use? (`API_GET_LIST_X`? `X_VIEW`?)
+   - **Delete strategy:** Physical or soft delete? How are child records cascaded?
+   - **Import flow:** What base class/pipe? What's the header/data row convention?
+   - **Export flow:** Direct download or SSE status tracking? What decorators?
+   - **Uniqueness:** DB-level UNIQUE index, app-level check, or both?
+
+This is the most important step. Every convention you extract here prevents downstream specs from guessing wrong.
+
+#### Step 2: Pattern docs per area
+
 Read only 1-2 representative files per area to understand the pattern. Do NOT read every file.
 
 | Doc file | What to capture (~line target) | NEVER include |
 |---|---|---|
 | `getting-started.md` | Install, env, dev server, required services, key scripts (~40) | Every available CLI/artisan/manage.py command |
 | `overview.md` | Architecture pattern, annotated dir tree, entry points, config (~40) | Full file listings or module inventories |
-| `api-routes.md` | Route organization pattern, file locations, middleware chain, how to add a route (~30) | Table/list of individual endpoints |
-| `models.md` | ORM, model patterns, key relationships, where models live (~30) | List of model names, fields, or columns |
+| `api-routes.md` | Route organization, middleware chain, how to add a route. **MUST include from Reference Module:** exact CRUD endpoint naming convention (e.g. `POST /resource/create`), list response shape (exact DTO class + field structure), check-name endpoint pattern, pagination defaults (~50) | Table/list of individual endpoints |
+| `models.md` | ORM, model patterns, key relationships, where models live. **MUST include:** soft-delete strategy (`@DeleteDateColumn` or equivalent), unique constraint pattern (DB-level vs app-level), parent-child cascade pattern (~40) | List of model names, fields, or columns |
 | `migrations.md` | Tool, commands (run/create/rollback/status/seed), file location (~25) | List of migration files |
-| `services.md` | Service pattern, where they live, business domain organization (~30) | List of service classes or methods |
-| `auth.md` | Auth strategy, role model, token flow, protected vs public (~25) | List of individual permissions or roles |
-| `patterns.md` | Naming, error handling, testing approach, logging (~30) | Exhaustive naming examples |
+| `services.md` | Service pattern, where they live, business domain organization. **MUST include from Reference Module:** how list queries use pagination, how soft-delete cascade works in transactions, how uniqueness is checked (~40) | List of service classes or methods |
+| `auth.md` | Auth strategy, role model, token flow, protected vs public. **MUST include:** permission enum naming convention with examples (e.g. `API_<ACTION>_<RESOURCE>`), where permissions are registered (enum file, JSON seed, migration), how frontend checks permissions (~35) | List of individual permissions or roles |
+| `patterns.md` | Naming, error handling, testing approach, logging. **MUST include from Reference Module:** import/export flow pattern (base classes, SSE status, file download), validation pipe pattern (~40) | Exhaustive naming examples |
 | `dependencies.md` | Top 5-8 framework-level deps (name \| purpose), external integrations (~25) | Every package from package.json/requirements.txt |
 | `data-contracts.md` | **All** static enum/constant value→label mappings, status codes, type codes, flags. Where constants are defined. Pattern for declaring new ones (~40) | Dynamic/computed values, or anything that changes with data |
 | `templates.md` | Export/report template files (xlsx, docx, pdf, html emails): where they live, naming pattern, what library generates them, how a new template is added (~30) | Individual template names or their column/field structure |

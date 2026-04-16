@@ -31,7 +31,10 @@ Generate lean knowledge files from a frontend codebase for future development.
 
 Describe HOW the codebase is organized and WHERE things live. Never list WHAT currently exists.
 
-**Exception — Static Constraints ARE allowed:** Enum values, status/type codes, and constant value→label mappings are schema contracts, not growing lists. Capture them. They define what the frontend must render and rarely change.
+**Two exceptions — these ARE allowed:**
+
+1. **Static Constraints:** Enum values, status/type codes, and constant value→label mappings are schema contracts, not growing lists. Capture them.
+2. **Implementation Conventions:** Concrete patterns that every new page/view MUST follow — list table pagination pattern, API call conventions, form dialog patterns, permission checking, import/export UI flow, route config structure. These are **replication instructions**, not instance lists. A new developer (or AI) reading these should be able to build a new CRUD page that matches the existing codebase exactly.
 
 ### Forbidden Content (will make docs stale immediately)
 
@@ -43,6 +46,20 @@ Describe HOW the codebase is organized and WHERE things live. Never list WHAT cu
 - Lists/tables of individual CSS classes or design tokens by name
 - ANY enumeration of items that grows when developers add new code
 
+### Allowed: Implementation Conventions (these are patterns, not instances)
+
+Conventions answer "how do I build a new page/view that matches the existing codebase?" Examples of what to capture:
+
+- List/table pattern (which table component? server-side or client-side pagination? what params sent to API?)
+- Pagination response handling (how does the page consume the API response? what fields map to the pagination component?)
+- Form pattern (dialog/modal or separate route? what form/validation library?)
+- Permission checking (directive, wrapper component, or JS check? how are permission constants imported?)
+- Route config structure (layout component, meta fields, how sidebar menu is generated)
+- Import/export UI flow (upload component, result display, download mechanism)
+- API call convention (how are params built? how is the response unwrapped?)
+
+These describe HOW to build, not WHAT exists. They stay valid when new pages are added.
+
 ### What to Write Instead
 
 | Doc | GOOD (timeless) | BAD (goes stale) |
@@ -50,7 +67,7 @@ Describe HOW the codebase is organized and WHERE things live. Never list WHAT cu
 | `components.md` | "Components in `src/components/`, organized by feature. Pattern: each component folder has `index.tsx` + `styles.module.css`. Shared UI primitives in `src/components/ui/`." | "Button, Card, Modal, Header, Sidebar..." |
 | `routing.md` | "Next.js app router. Pages in `src/app/`. Layouts nest via `layout.tsx`. Auth guard in `middleware.ts` protects all routes under `/dashboard`." | "/ → Home, /about → About, /dashboard → Dashboard..." |
 | `state.md` | "Zustand stores in `src/stores/`. Pattern: one file per domain. Each exports a `use[Domain]Store` hook." | "useAuthStore, useCartStore, useUIStore..." |
-| `api-client.md` | "Axios instance in `src/lib/api.ts`. Auth token injected via interceptor. Each feature has its own API file in `src/api/`." | "getUsers(), createPost(), deleteComment()..." |
+| `api-client.md` | "Axios instance in `src/lib/api.ts`. Auth token injected via interceptor. Each feature has its own API file in `src/api/`. List APIs pass pagination params and receive [discovered response shape]." | "getUsers(), createPost(), deleteComment()..." |
 | `data-contracts.md` | "Order status labels: `{1:'Pending', 2:'Processing', 3:'Shipped'}`. Defined in `src/constants/order.ts`, mirrored from backend." | *(this IS good — static value maps are contracts, not instance lists)* |
 
 ### Line Targets
@@ -101,18 +118,45 @@ Target ~50-80 lines per doc. Max 100. Use `scripts/discover.sh` to save tokens.
 
 ### Phase 2 — Targeted Analysis
 
+#### Step 1: Reference Page Deep Dive
+
+Before writing any docs, find **one complete CRUD page/view** — the one with the most features (list table, create/edit dialog, delete, import, export, search/filter). Read its **entire implementation** end-to-end:
+
+1. **Find it:** Look for the view/page directory with the most files, or one that has import/export + CRUD dialogs
+2. **Read these files** for the chosen page:
+   - Main view/page (list table, pagination, search/filter, toolbar buttons)
+   - Create/Edit dialog or form (form fields, validation, submit flow)
+   - API module (all API function calls — how params are passed, what shape returns)
+   - Route config (path, layout, meta, permission roles)
+   - Import dialog (if exists — upload flow, result display)
+   - Export logic (if exists — download trigger, progress tracking)
+   - Permission usage (how permissions gate buttons/actions)
+
+3. **Extract these conventions** (write them down — you'll use them in Step 2):
+   - **List/table pattern:** What table component? Server-side or client-side pagination? What pagination component? What params sent to API (`page`/`perPage` vs `page`/`limit`)?
+   - **Pagination response handling:** How does the page consume the API response? What fields are mapped to the pagination component?
+   - **Form pattern:** Dialog (modal) or separate route? What form component/validation library?
+   - **Permission pattern:** Directive, component wrapper, or JS check? How are permission constants imported?
+   - **Route config structure:** Layout component, meta fields, roles format, how sidebar menu is generated
+   - **Import/export UI flow:** Upload component, result dialog, download result file, SSE status tracking?
+   - **API call convention:** How are list params built? How is auth token attached? Response unwrapping pattern?
+
+This is the most important step. Every convention you extract here prevents downstream specs from guessing wrong.
+
+#### Step 2: Pattern docs per area
+
 Read only 1-2 representative files per area to understand the pattern. Do NOT read every file.
 
 | Doc file | What to capture (~line target) | NEVER include |
 |---|---|---|
 | `getting-started.md` | Install, env, dev server + URL, build, key scripts, common issues (~40) | Every available npm script or CLI command |
 | `overview.md` | Architecture pattern, annotated dir tree, entry points, build config (~40) | Full file listings or module inventories |
-| `routing.md` | Routing approach, where pages live, guards, layouts, how to add a route (~30) | Table/list of individual pages or URLs |
-| `components.md` | Organization pattern, directory locations + counts, composition patterns (~30) | List of component names or their props |
+| `routing.md` | Routing approach, where pages live, guards, layouts, how to add a route. **MUST include from Reference Page:** exact route config structure (path, component, meta fields, roles format), how sidebar menu is generated from routes, permission role format (~40) | Table/list of individual pages or URLs |
+| `components.md` | Organization pattern, directory locations + counts, composition patterns. **MUST include from Reference Page:** list table pattern (which table component, server-side pagination component + props), form dialog pattern (dialog vs route, form validation approach), common shared components used across CRUD pages (~40) | List of component names or their props |
 | `state.md` | Approach (Redux/Zustand/Pinia/etc), where stores live, global vs local (~25) | List of store names, slices, or state keys |
-| `api-client.md` | Client setup, auth tokens, error handling, how to add an API call (~25) | List of individual API functions or endpoints |
+| `api-client.md` | Client setup, auth tokens, error handling, how to add an API call. **MUST include from Reference Page:** how list API passes pagination params, how response is unwrapped, import/export API call pattern (~35) | List of individual API functions or endpoints |
 | `styling.md` | Approach, theme/tokens location, responsive strategy, dark mode setup (~25) | List of CSS classes, token names, or color values |
-| `patterns.md` | Naming, hooks/composables pattern, error handling, testing approach (~30) | List of individual hooks or composable names |
+| `patterns.md` | Naming, hooks/composables pattern, error handling, testing approach. **MUST include from Reference Page:** permission directive/check pattern with example, import upload + result dialog flow, export download + SSE status flow (~40) | List of individual hooks or composable names |
 | `dependencies.md` | Top 5-8 framework-level deps (name \| purpose), external integrations (~25) | Every package from package.json |
 | `data-contracts.md` | **All** frontend-side enum/constant value→label maps, status display text, type labels, validation rules (min/max, regex). Where frontend constants are defined. How they align with backend values. (~40) | Dynamic values, computed labels, or anything fetched at runtime |
 | `templates.md` | Downloadable template files (xlsx, csv, docx in `public/` or `assets/`): where they live, naming pattern, what triggers the download. Client-side export libs if used. How to add a new downloadable template (~25) | Internal component template files (those belong in components.md) |

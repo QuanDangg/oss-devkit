@@ -173,6 +173,29 @@ Trích xuất:
 - Nếu docs đã đầy đủ cho một phần → KHÔNG cần đọc source code phần đó
 - Source code là **nguồn sự thật** (source of truth) — nếu docs và code mâu thuẫn, ưu tiên code và ghi nhận sự khác biệt để báo BA
 
+#### Bước 3: Reference Module Deep Dive (TỰ ĐỘNG — KHÔNG HỎI BA)
+
+Đọc **một module CRUD hoàn chỉnh nhất** trong codebase để trích xuất implementation conventions. Bước này chạy tự động, không hỏi BA.
+
+**Xác định module tham chiếu:**
+- Từ file khảo sát, schema, hoặc docs → tự xác định module tương tự nhất với feature cần xây dựng
+- Ưu tiên module có đầy đủ: list, create, update, delete, import, export
+
+**Đọc end-to-end (backend):** Controller → Service → Repository → DTOs → Entity → Migration → Pipes
+**Đọc end-to-end (frontend):** Main view/page → Create/Edit dialog → API module → Route config
+
+**Trích xuất conventions thực tế** (ghi lại — tự động áp dụng khi sinh spec ở Pha 4):
+- Response shape thật cho list API
+- Endpoint naming convention
+- Permission naming convention
+- Delete strategy
+- Import/export flow
+- Uniqueness validation
+- Form pattern
+- Pagination
+
+**Cross-validate:** So sánh conventions từ source code vs `.docs/`. Nếu mâu thuẫn → **tự động dùng convention từ source code** khi sinh spec. Không hỏi BA về technical conventions — BA không cần biết chi tiết này.
+
 ### 1.4 Đọc spec hiện có (nếu có)
 
 ```
@@ -251,8 +274,9 @@ Phân tích theo các chiều:
 - Phân quyền
 - Xử lý lỗi
 - Phi chức năng (performance, security)
-
 **Trình bày gap analysis cho BA và hỏi xác nhận trước khi vào Pha 3.**
+
+**Lưu ý:** KHÔNG trình bày technical convention diffs (response shape, endpoint naming, v.v.) cho BA. Những mâu thuẫn kỹ thuật giữa docs và code được xử lý tự động (luôn theo code) ở Pha 4.
 
 ---
 
@@ -265,6 +289,7 @@ Phân tích theo các chiều:
 - Hỏi **TỪNG CÂU MỘT** bằng AskUserQuestion — không dồn nhiều câu
 - **Ưu tiên multiple choice** (2-4 options tiếng Việt), gợi ý từ context đã thu thập
 - Sau mỗi nhóm, tóm tắt và hỏi "Còn bổ sung gì không?"
+- **KHÔNG hỏi BA về technical conventions** (response shape, endpoint naming, permission pattern, v.v.) — tự động xử lý từ source code
 
 ### Thứ tự hỏi
 
@@ -298,6 +323,7 @@ Khi đã cover hết các nhóm, tóm tắt thông tin đã thu thập và hỏi
 - Mọi chức năng → luồng chính + luồng ngoại lệ + business rules + validation
 - Kịch bản kiểm thử → happy path + edge cases + error cases + boundary
 - **Cross-reference** giữa sections: chức năng X → API Y → bảng Z → test TC-nn
+- **Convention từ source code (Pha 1.3 Bước 3) ưu tiên hơn `.docs/`** — response shape, endpoint naming, permission naming, delete strategy, import/export flow phải khớp với code thật, không dùng thông tin từ `.docs/` nếu đã phát hiện mâu thuẫn
 - Dùng tiếng Việt có dấu đầy đủ
 
 ### Ghi file
